@@ -13,7 +13,7 @@
 				<h1 class="word">Update your bank details</h1>
 			</div></br></br></br>
 			<h2 class="word">
-				<form action="{{ url_for('update_profile') }}" method="post">
+				<form action="{{ url_for('update_profile') }}" method="post" enctype="multipart/form-data">
 				<div class="msg">{{ msg }}</div>
 					<input 
                         id="cvv" 
@@ -64,6 +64,20 @@
                         name="zipcode" 
                         type="text" 
                         placeholder="Enter Your zipcode" 
+                        class="textbox"
+                    />
+                    <input 
+                        id="avatar" 
+                        name="avatar" 
+                        type="file" 
+                        placeholder="Choose your avatar" 
+                        class="textbox"
+                    />
+                    <input 
+                        id="contact" 
+                        name="contact" 
+                        type="text" 
+                        placeholder="Enter your contact number" 
                         class="textbox"
                     />
                     <input type="submit" class="btn" value="Save"></br>

@@ -2,24 +2,32 @@ from itertools import product
 from flask import Flask, jsonify
 from flask import render_template, redirect, url_for, request, session
 import re
+from flask.helpers import flash
 from flask_mysqldb import MySQL
 import MySQLdb
-
+import os
+from werkzeug.utils import secure_filename
 
 # Initialize flask application
 app = Flask(__name__)
 
 
 # App configuration for image
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = '/home/amit/Desktop/Web/my ecommerce project/static/uploads'
+ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'png'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 
 # Database Configuration
 app.config['SECRET_KEY'] = 'sdklaskdlask'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'Kakashi_2021'
-app.config['MYSQL_DB'] = 'myshop'
+app.config['MYSQL_DB'] = 'nepali_bazaar'
 
 
 mysql = MySQL(app)
@@ -53,7 +61,7 @@ def login():
         password = request.form['password']
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM Customer WHERE  email = %s and password = %s', (email, password, ))
+        cursor.execute('SELECT * FROM Customers WHERE  email = %s and password = %s', (email, password, ))
    
 
         account = cursor.fetchone()
@@ -94,7 +102,7 @@ def register():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
         # Execute a mysql query to get the username and password of the user instance
-        cursor.execute('SELECT * FROM Customer WHERE username = %s', (username, ))
+        cursor.execute('SELECT * FROM Customers WHERE username = %s', (username, ))
         # fetches one result that matches the username 
         account = cursor.fetchone()
 
@@ -112,7 +120,7 @@ def register():
             msg = "Please fill out the form !"
         
         else:
-            cursor.execute('INSERT INTO Customer (username, email, password) VALUES (%s, %s, %s)', (username, email, password))
+            cursor.execute('INSERT INTO Customers (username, email, password) VALUES (%s, %s, %s)', (username, email, password))
             mysql.connection.commit()
             msg = 'Account registered successfully !'
             return redirect(url_for('home'))
@@ -121,6 +129,7 @@ def register():
         msg = 'Please fill out the form'
     
     return render_template('register.html', msg=msg)
+
 
 
 @app.route('/profile-update', methods=['GET', 'POST'])
@@ -134,12 +143,23 @@ def update_profile():
         expiryDate = request.form['expiryDate']
         city = request.form['city']
         state = request.form['state']
+        contact = request.form['contact']
         country = request.form['country']
         zipcode = request.form['zipcode']
+        
+        avatar = request.files['avatar']
+        print(avatar)
+        filename = secure_filename(avatar.filename)
+        avatar.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        print(filename)
+        print(user_id)
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         try:
-            cursor.execute('INSERT INTO CustomerDetails VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (user_id, cvv, creditCardNum, expiryDate, city, state, country, zipcode))
+            cursor.execute('''INSERT INTO CustomerDetails 
+            (customerID, avatar, contact, creditCardNum, cvv, city, state, country, zipcode, expiryDate) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', 
+            (user_id, filename, contact, creditCardNum, cvv, city, state, country, zipcode, expiryDate, ))
             mysql.connection.commit()
             return redirect(url_for('home'))
 
@@ -152,7 +172,8 @@ def update_profile():
     else:
         msg = "Please fill out the form"
 
-    return render_template('update_profile.html', msg=msg)
+    return render_template('update_profile.html', msg=msg, filename=filename)
+
 
 
 @app.route("/profile")
@@ -160,8 +181,8 @@ def userProfile():
     user_id = session.get('id')
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(
-        '''SELECT c.username, d.city, d.state, d.country
-            FROM Customer as c
+        '''SELECT c.username, d.city, d.state, d.country, d.avatar
+            FROM Customers as c
             inner join CustomerDetails as d 
             on c.customerID = d.customerID
             where c.customerID = %s

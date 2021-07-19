@@ -7,4 +7,10 @@
     <p>City: {{profile.city}}</p>
     <p>State: {{profile.state}}</p>
     <p>Country: {{profile.country}}</p>
+    <p>Avatar:</p>
+    {% if profile.avatar %}
+	<div>
+		<img src="{{url_for('static', filename='uploads/' + profile.avatar)}}" width="300" height="275">
+	</div>
+{% endif %}
 </div>
