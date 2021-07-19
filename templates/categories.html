@@ -1,0 +1,3 @@
+{% for cat in categories %}
+    <a href={{url_for('category_list', cat=cat.category)}} id = {{cat.category}} name ="category">{{cat['category']}}</a>
+{% endfor %}

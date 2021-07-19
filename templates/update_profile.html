@@ -1,0 +1,75 @@
+<!-- Store this code in 'register.html' file inside the 'templates' folder -->
+
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title> Profile_update </title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">			
+	</head>
+	<body></br></br></br></br></br>
+		<div align="center">
+		<div align="center" class="border">
+			<div class="header">
+				<h1 class="word">Update your bank details</h1>
+			</div></br></br></br>
+			<h2 class="word">
+				<form action="{{ url_for('update_profile') }}" method="post">
+				<div class="msg">{{ msg }}</div>
+					<input 
+                        id="cvv" 
+                        name="cvv" 
+                        type="text" 
+                        placeholder="Enter Your cvv" 
+                        class="textbox"
+                    />
+                    </br></br>
+					
+					<input 
+                        id="creditCardNum" 
+                        name="creditCardNum" 
+                        type="text" 
+                        placeholder="Enter Your credit card number" 
+                        class="textbox"
+                    />
+					<input 
+                        id="expiryDate" 
+                        name="expiryDate" 
+                        type="date" 
+                        placeholder="Expires on" 
+                        class="textbox"
+                    />
+					<input 
+                        id="city" 
+                        name="city" 
+                        type="text" 
+                        placeholder="Enter Your city" 
+                        class="textbox"
+                    />
+					<input 
+                        id="state" 
+                        name="state" 
+                        type="text" 
+                        placeholder="Enter the state" 
+                        class="textbox"
+                    />
+					<input 
+                        id="country" 
+                        name="country" 
+                        type="text" 
+                        placeholder="Enter Your country" 
+                        class="textbox"
+                    />
+					<input 
+                        id="zipcode" 
+                        name="zipcode" 
+                        type="text" 
+                        placeholder="Enter Your zipcode" 
+                        class="textbox"
+                    />
+                    <input type="submit" class="btn" value="Save"></br>
+				</form>
+			</h2>
+		</div>
+		</div>
+	</body>
+</html>

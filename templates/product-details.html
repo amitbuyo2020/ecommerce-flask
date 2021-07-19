@@ -1,0 +1,9 @@
+{% if products %}
+<h1 id={{products.productCode}}>{{products.productName}}</h1>
+<h5>Rs. {{products.price}}</h5>
+<p>{{products.description}}</p>
+<p>Weight: {{products.weight}} kg.</p>
+<p>Category: <strong>{{products.category}}</strong></p>
+{% else %}
+<h1>Oops! Nothing to show here</h1>
+{% endif %}
