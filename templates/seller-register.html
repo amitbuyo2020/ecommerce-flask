@@ -1,0 +1,40 @@
+
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title> Register </title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">			
+	</head>
+	<body></br></br></br></br></br>
+		<div align="center">
+		<div align="center" class="border">
+			<div class="header">
+				<h1 class="word">Register</h1>
+			</div></br></br></br>
+			<h2 class="word">
+				<form action="{{ url_for('register_as_seller') }}" method="post", enctype="multipart/form-data">
+				<div class="msg">{{ msg }}</div>
+					<input id="username" name="owner" type="text" placeholder="Enter Your Username" class="textbox"/></br></br>
+					<input id="email" name="email" type="text" placeholder="Enter Your Email ID" class="textbox"/></br></br>
+					<input id="password" name="password" type="password" placeholder="Enter Your Password" class="textbox"/></br></br>
+					
+                    <input id="businessName" name="businessName" type="text" placeholder="Enter Your Business name" class="textbox"/></br></br>
+					<!-- <input id="registrationNum" name="registrationNum" type="text" placeholder="Enter your registration number" class="textbox"/></br></br> -->
+					<input type="text" id="registrationNum" placeholder="Enter your registration number" name='registerNum' class="textbox" />
+                    <input id="phone" name="phone" type="text" placeholder="Enter Your contact num" class="textbox"/></br></br>
+					
+                    <input id="creditCardNum" name="creditCardNum" type="text" placeholder="Enter Your credit card info" class="textbox"/></br></br>
+					<input id="location" name="location" type="text" placeholder="Enter Your business location" class="textbox"/></br></br>
+					<input id="city" name="city" type="text" placeholder="Enter Your city" class="textbox"/></br></br>
+					
+                    <input type="file" name="logo" id="logo" class="textbox" placeholder="Choose your logo" /> <br/>
+
+
+					<input type="submit" class="btn" value="Sign Up"></br>
+				</form>
+			</h2>
+			<p class="bottom">Already have an account? <a class="bottom" href="{{url_for('login')}}"> Sign In here</a></p>
+		</div>
+		</div>
+	</body>
+</html>

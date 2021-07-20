@@ -84,10 +84,6 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-############################################################################
-
-############################################################################
-
 # Register view
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
@@ -195,6 +191,142 @@ def userProfile():
     return render_template('profile.html', profile=profile)
 
 ######################## END OF AUTHENTICATIN AND USER VIEWS ########################################
+############################################################################
+# Seller Registration and login
+
+
+@app.route('/seller/register', methods=['GET', 'POST'])
+def register_as_seller():
+    if request.method == "POST":
+        email = request.form['email']
+        username = request.form['owner']
+        password = request.form['password']
+        businessName = request.form['businessName']
+        registrationNum = request.form['registerNum']
+        phone = request.form['phone']
+        location = request.form['location']
+        city = request.form['city']
+        creditCardNum = request.form['creditCardNum']
+
+        companyLogo = request.files['logo']
+        filename = secure_filename(companyLogo.filename)
+        companyLogo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM Seller WHERE businessName = %s', (businessName, ))
+        seller = cursor.fetchone()
+
+        if seller:
+            msg = "Seller with that name already exists"
+        
+        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+            # if email doesnot match the given regular expression
+            msg = 'Invalid email address'
+        
+        elif not re.match(r'[A-Za-z0-9]+', username):
+            msg = "Username must contain only alphanumeric values"
+        
+        elif not 'username' or not 'password' or not 'email' or not 'businessName':
+            msg = "Please fill out the form !"
+        
+        else:
+            cursor.execute('''insert into Seller  (
+                registrationNum,
+                businessName ,
+                owner ,
+                email ,
+                password ,
+                phone ,
+                creditCardNum ,
+                location ,
+                city, 
+                img
+                ) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', 
+                (registrationNum, businessName, username, 
+                    email, password, phone, creditCardNum, 
+                    location, city, filename
+                )
+            )
+            mysql.connection.commit()
+            msg = 'Account registered successfully !'
+            return redirect(url_for('seller_home'))
+    else:
+        msg = 'Please fill out the form'
+    
+    return render_template("seller-register.html", msg = msg)
+
+
+@app.route('/seller/login', methods=['POST', 'GET'])
+def login_as_seller():
+    msg = ''
+    session.clear()
+    if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
+        email = request.form['email']
+        password = request.form['password']
+        print(email, password)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM Seller WHERE  email = %s and password = %s', (email, password, ))
+
+
+        seller = cursor.fetchone()
+        if seller:
+            session['loggedin'] = True
+            session['id'] = seller['sellerID']
+            session['username'] = seller['owner']
+            session['email'] = seller['email']
+            msg = "Logged in successfully"
+            print(session['id'], session['username'], session['email'])
+            return redirect(url_for('seller_home'))
+        else:
+            msg = 'Incorrect email or password'
+        
+    return render_template('seller-login.html', msg=msg)
+
+        
+@app.route('/seller')
+def seller_home():
+    seller_id = session['id']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    if session['loggedin']:
+        cursor.execute(
+            '''
+                SELECT * FROM Seller WHERE sellerID = %s
+            ''',
+            (seller_id, )
+        )
+        seller_info = cursor.fetchall()
+
+
+
+    return render_template('seller-home.html')
+
+
+
+
+@app.route('/seller/profile')
+def profile():
+    if session['loggedin']:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            '''
+                SELECT * FROM Seller
+                WHERE sellerID = %s
+            ''',
+            (session['id'], )
+        )
+        seller = cursor.fetchone()
+        # print(seller['sellerID'])
+    else:
+        return redirect(url_for('login_as_seller'))
+    return render_template('seller-profile.html', seller=seller)
+
+
+@app.route("/seller/add", methods=['GET', 'POST'])
+def add_product():
+    if request.method == "POST" and session['loggedin']:
+        pass
+################################END OF SELLER FUNCTIONS/ROUTES ############################################
+
 
 ######################## START OF PRODUCT VIEWS ###########################################
 @app.route('/products')
