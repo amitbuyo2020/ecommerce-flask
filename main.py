@@ -43,11 +43,14 @@ def home():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(
         '''
-            SELECT distinct category FROM ProductDetails
+           SELECT distinct d.category, p.productID, p.productName, p.price, p.productImg 
+           FROM Products AS p
+           INNER JOIN ProductDetails AS d
+           on p.productID = d.productID
         '''
     )
-    categories = cursor.fetchall()
-    return render_template('index.html', categories=categories)
+    products = cursor.fetchall()
+    return render_template('index.html', products=products)
 
 ############################ START OF AUTHENTICATION AND USER VIEWS ########################
 # Login view
@@ -144,11 +147,8 @@ def update_profile():
         zipcode = request.form['zipcode']
         
         avatar = request.files['avatar']
-        print(avatar)
         filename = secure_filename(avatar.filename)
         avatar.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        print(filename)
-        print(user_id)
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         try:
@@ -256,6 +256,13 @@ def register_as_seller():
     return render_template("seller-register.html", msg = msg)
 
 
+@app.route("/seller/logout")
+def logout_as_seller():
+    msg = "Logging out means logging out"
+    session.clear()
+    return redirect(url_for('home'))
+
+
 @app.route('/seller/login', methods=['POST', 'GET'])
 def login_as_seller():
     msg = ''
@@ -275,7 +282,7 @@ def login_as_seller():
             session['username'] = seller['owner']
             session['email'] = seller['email']
             msg = "Logged in successfully"
-            print(session['id'], session['username'], session['email'])
+            print(session['id'], session['username'], session['email'], session['loggedin'])
             return redirect(url_for('seller_home'))
         else:
             msg = 'Incorrect email or password'
@@ -283,7 +290,7 @@ def login_as_seller():
     return render_template('seller-login.html', msg=msg)
 
         
-@app.route('/seller')
+@app.route('/seller/')
 def seller_home():
     seller_id = session['id']
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -294,11 +301,11 @@ def seller_home():
             ''',
             (seller_id, )
         )
-        seller_info = cursor.fetchall()
+        seller_info = cursor.fetchone()
+        print(seller_info)
 
 
-
-    return render_template('seller-home.html')
+    return render_template('seller-home.html', seller_info=seller_info)
 
 
 
@@ -315,7 +322,7 @@ def profile():
             (session['id'], )
         )
         seller = cursor.fetchone()
-        # print(seller['sellerID'])
+        # print(seller)
     else:
         return redirect(url_for('login_as_seller'))
     return render_template('seller-profile.html', seller=seller)
@@ -323,8 +330,45 @@ def profile():
 
 @app.route("/seller/add", methods=['GET', 'POST'])
 def add_product():
-    if request.method == "POST" and session['loggedin']:
-        pass
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    print(session['loggedin'])
+    if request.method == "POST":
+        # print(session['loggedin'])
+
+        sellerID = session['id']
+        productID = request.form['productID']
+        productName = request.form['productName']
+        price = request.form['price']
+        weight = request.form['weight']
+        ratings = request.form['ratings']
+        description = request.form['description']
+        category = request.form['category']
+        inStock = request.form['inStock']
+
+        productImg = request.files['productImg']
+        filename = secure_filename(productImg.filename)
+        productImg.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        cursor.execute(
+            '''
+            INSERT INTO Products VALUES (%s, %s, %s, %s, %s)
+            ''', 
+            (productID, price, filename, productName, sellerID)
+        )
+        cursor.execute(
+            '''
+                INSERT INTO ProductDetails VALUES (%s, %s, %s, %s, %s, %s)
+            ''',
+            (productID, description, inStock, category, ratings, weight)
+        )
+        mysql.connection.commit()
+        msg = "Product Added Successfully"
+        return redirect(url_for('seller_home'))
+    
+    else:
+        msg = "Something went wrong!!"
+        # return redirect(url_for('login_as_seller'))
+    return render_template('add_product.html', msg=msg)
 ################################END OF SELLER FUNCTIONS/ROUTES ############################################
 
 
@@ -345,21 +389,21 @@ def Products():
 def product_details():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     productID = request.args.get('pk')
-    # print(productID)
+
     
     cursor.execute(
-        '''SELECT p.productCode, p.productName, d.description, p.price, d.weight, d.category 
+        '''SELECT p.productID, p.productName, p.productImg, d.description, p.price, d.weight, d.category 
         FROM Products AS p
         inner join ProductDetails AS d
-        ON p.productCode = d.productCode
-        WHERE p.productCode = %s
+        ON p.productID = d.productID
+        WHERE p.productID = %s
         ''', 
         (productID, )
     )
     products = cursor.fetchone()
-    # print(products)
+
     return render_template('product-details.html', products=products)
-#     # return render_template('product-details.html')
+
 
 
 @app.route('/category/')
@@ -386,10 +430,10 @@ def category_list():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(
         '''
-            SELECT distinct p.productName, p.price, d.description, d.inStock, d.weight, d.category
+            SELECT distinct p.productName, p.productImg,  p.price, d.description, d.inStock, d.weight, d.category
             FROM ProductDetails AS d
             INNER JOIN Products AS p
-            ON d.productCode = p.productCode
+            ON d.productID = p.productID
             WHERE d.category = %s
         ''', 
         (category, )
@@ -410,7 +454,7 @@ def search():
                 SELECT p.productName, p.price, d.description
                 FROM Products AS p
                 INNER JOIN ProductDetails AS d
-                on p.productCode = d.productCode
+                on p.productID = d.productID
                 WHERE p.productName LIKE "%s"
             ''',
             (items, )
@@ -424,7 +468,12 @@ def search():
     return render_template('search.html')
 ########################## END OF PRODUCT VIEWS ##################################################################
 
-
+################################### START OF ORDER VIEWS ###############################
+@app.route('/order', methods=["POST", 'GET'])
+def order():
+    if request.method == "POST":
+        pass
+################################### END OF ORDER VIEWS ###############################
 
 if __name__ == "__main__":
     app.run(debug = True)

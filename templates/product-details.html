@@ -1,9 +1,11 @@
 {% if products %}
-<h1 id={{products.productCode}}>{{products.productName}}</h1>
+<h1 id={{products.productID}}>{{products.productName}}</h1>
+<img src="{{url_for('static', filename='uploads/' + products.productImg)}}" alt="" width="450" height="500">
 <h5>Rs. {{products.price}}</h5>
 <p>{{products.description}}</p>
 <p>Weight: {{products.weight}} kg.</p>
 <p>Category: <strong>{{products.category}}</strong></p>
+<a href="{{url_for('order')}}">Order Now</a>
 {% else %}
 <h1>Oops! Nothing to show here</h1>
 {% endif %}

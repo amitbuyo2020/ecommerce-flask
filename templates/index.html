@@ -1,23 +1,80 @@
-<!-- Store this code in 'index.html' file inside the 'templates' folder-->
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<title>Document</title>
+</head>
+<body>
+	<!DOCTYPE html>
+	<html lang="en">
 	<head>
-		<meta charset="UTF-8">
-		<title> Index </title>
-		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">					
+	  <title>Bootstrap Example</title>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 	</head>
-	<body></br></br></br></br></br>
-		<div align="center">
-		<div align="center" class="border">
-			<div class="header">
-				<h1 class="word">Index</h1>
-			</div></br></br></br>
-				<h1 class="bottom">
-					Hi {{session.username}}!!</br></br> Welcome to the index page...				
-				</h1></br></br></br>
-				<a href="{{ url_for('logout') }}" class="btn">Logout</a>
-		</div>
+	<body>
 	
+	<nav class="navbar navbar-inverse">
+	  <div class="container-fluid">
+		<div class="navbar-header">
+		  <a class="navbar-brand" href="#">Nepali Bazaar</a>
 		</div>
-	</body>
+		<ul class="nav navbar-nav">
+		  <li class="active"><a href="#">Home</a></li>
+		  <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
+			<ul class="dropdown-menu">
+			  <li><a href="#">Page 1-1</a></li>
+			  <li><a href="#">Page 1-2</a></li>
+			  <li><a href="#">Page 1-3</a></li>
+			</ul>
+		  </li>
+		  <li><a href="#">Page 2</a></li>
+		</ul>
+		<ul class="nav navbar-nav navbar-right">
+			{% if session.loggedin %}
+				<li><h4 class="text-white">Hi, {{session.username}}</h4></li>
+				<li><a href="{{url_for('logout')}}"><span class="glyphicon glyphicon-log-in"></span>Log out</a></li>
+			{% else %}
+				<li><a href="{{url_for('register')}}"><span class="glyphicon glyphicon-user"></span> Sign up</a></li>
+				<li><a href="{{url_for('login')}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+			{% endif %}	
+		</ul>
+	  </div>
+	</nav>
+	  
+	<div class="container d-flex flex-row justify-content-between">
+		<div class="main flex-grow-1 ">
+			<h1>Our Products</h1>
+			<div class="products">
+				{% for product in products %}
+					<!-- {{product.productID}} -->
+					<a href={{url_for('product_details', pk=product.productID)}}>
+						<img src="{{url_for('static', filename='uploads/' + product.productImg)}}" alt="samsung" width="250" height="200">
+						<h3 align="center">{{product.productName}}</h3>
+						<h4 align="center">Rs. {{product.price}}</h4>
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+		<div class="side">
+			<h2>Category</h2>
+			{% for product in products %}
+			<a href={{url_for('category_list', cat=product.category)}} id = {{product.category}} name ="category">{{product.category}}</a>
+
+			{% endfor %}
+
+	</div>
+
+	
+  
+  	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
 </html>

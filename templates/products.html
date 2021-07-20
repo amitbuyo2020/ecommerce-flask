@@ -1,6 +1,6 @@
 <div>
     {% for product in products %}
-        <h1><a href={{url_for('product_details', pk=product.productCode) }} id={{product.productCode}}>{{product.productName}}</a></h1>
+        <h1><a href={{url_for('product_details', pk=product.productID) }} id={{product.productID}}>{{product.productName}}</a></h1>
         <p>Rs. {{product.price}}</p>
     {% endfor %}
 

@@ -1,9 +1,14 @@
 
 {% for cat in cat_items %}
-    {{cat.productName}}
-    <br />
-    {{cat.price}}
-    <br />
-    {{cat.description}}
-    <p>{{cat.weight}} kgs</p>
+    <div align="center">
+        <img src="{{url_for('static', filename='uploads/' + cat.productImg)}}" alt="" width="400" height="300">    
+
+        <h3>{{cat.productName}}</h3>
+        <br />
+        <p>Price: Rs. <strong>{{cat.price}}</strong> </p>
+        <br />
+        <p>{{cat.description}}</p>
+        
+        <p>{{cat.weight}} kgs</p>
+    </div>
 {% endfor %}

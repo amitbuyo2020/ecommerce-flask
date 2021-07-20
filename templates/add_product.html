@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add a Product</title>
+</head>
+<body>
+    <div align="center">
+        <h1>Add a product </h1>
+        <form action="{{url_for('add_product')}}" method="POST" enctype="multipart/form-data">
+            <input type="text" id="productID" name="productID" placeholder="Enter the product Code" class="textbox" />
+            <input type="text" id="productName" name="productName" placeholder="Enter the product Name" class="textbox" />
+            <input type="file" id="productImg" name="productImg" placeholder="Select an image" class="textbox" />
+            <input type="text" id="price" name="price" placeholder="Enter the price" class="textbox" />
+            <input type="text" id="description" name="description" placeholder="Details about the product" class="textbox" />
+            <input type="text" id="inStock" name="inStock" placeholder="Remaining items in the stock" class="textbox" />
+            <input type="text" id="category" name="category" placeholder="Which category the product is" class="textbox" />
+            <input type="text" id="ratings" name="ratings" placeholder="Product Rating" class="textbox" />
+            <input type="text" id="weight" name="weight" placeholder="Weight" class="textbox" />
+            
+            <input type="submit" class="btn" value="Add Product" />
+        </form>
+    </div>
+</body>
+</html>
