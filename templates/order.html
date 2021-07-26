@@ -1,10 +1,19 @@
 {{msg}}
-<form action="{{url_for('order')}}" method="POST">
+{% if item %} 
+<div>
+    <img src="{{url_for('static', filename='uploads/' + item.productImg)}}" alt="product image">
+    <h3>{{item.productName}}</h3>
+    <p>Price: <strong>{{item.price}}</strong></p>
+</div>
+
+{% endif %}
+
+<form align="center" action="{{url_for('order')}}" method="POST">
     <input type="number" step="1" pattern="\d+" placeholder="Enter the number of orders" name="quantity" />
 
     <input type="text" name="billingAddress" class="textbox" placeholder="Billing Address" />
     <input type="text" name="productID" class="textbox" placeholder="productID" value="{{product_id}}" />
 
-    <input type="submit" name="Order now" class="textbox" placeholder="Order now" />
+    <button type="submit" name="Order now" class="tetbox">Order now</button>
     
 </form>

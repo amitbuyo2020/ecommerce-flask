@@ -1,0 +1,17 @@
+<h1 align="center">Hi! {{session.username}}</h1>
+<h4>Here are your recent orders</h4>
+
+{% for item in my_order %}
+
+<!-- If possible represent these products on a html table  -->
+<div>
+    <img src="{{url_for('static', filename='uploads/'+ item.productImg)}}" alt="product img">
+    <p>Order Number: {{item.orderNum}}</p>
+    <h4>{{item.productName}}</h4>
+    <p>Price: Rs.{{item.price}}</p>
+    <p>Quantity: {{item.quantityOrdered}}</p>
+    <p>Total: {{item.total}}</p>
+    <p>Ordered On: {{item.orderedDate}}</p>
+    <br />
+</div>
+{% endfor %}

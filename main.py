@@ -507,6 +507,16 @@ def order():
     bankDetails = cursor.fetchone()
     creditCardNum = bankDetails['creditCardNum']
 
+    cursor.execute(
+        """
+            SELECT productName, productImg, price
+            FROM Products 
+            WHERE productID = %s
+        """,
+        (productID, )
+    )
+    item = cursor.fetchone()
+
     if request.method == "POST":
         quantity = request.form['quantity']
         address = request.form['billingAddress']
@@ -540,7 +550,32 @@ def order():
         
 
 
-    return render_template('order.html', product_id=productID, msg=msg)
+    return render_template('order.html', product_id=productID, msg=msg, item=item)
+
+@app.route('/my-orders')
+def my_orders():
+
+    userID = session.get('id')
+    print(userID)
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        '''
+            SELECT o.orderNum, p.productName, p.productImg, 
+                o.quantityOrdered, p.price, 
+                (p.price * o.quantityOrdered) AS total,
+                o.orderedDate
+            FROM Orders AS o
+            INNER JOIN Products AS p
+            ON o.productID = p.productID
+            WHERE userID = %s
+        ''',
+        (userID, )
+    )
+    my_order = cursor.fetchall()
+    print(my_order)
+
+    return render_template('my-orders.html', my_order=my_order)
+
 ################################### END OF ORDER VIEWS ###############################
 
 
