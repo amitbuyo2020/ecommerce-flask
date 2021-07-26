@@ -40,6 +40,7 @@
 			{% if session.loggedin %}
 				<li><h4 class="text-white">Hi, {{session.username}}</h4></li>
 				<li><a href="{{url_for('my_orders')}}">My Orders</a></li>
+				<li><a href="{{url_for('userProfile')}}">My profile</a></li>
 				<li><a href="{{url_for('logout')}}"> <span class="glyphicon glyphicon-log-in"></span>Log out</a></li>
 			{% else %}
 				<li><a href="{{url_for('register')}}"> <span class="glyphicon glyphicon-user"></span> Sign up</a></li>

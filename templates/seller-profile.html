@@ -1,3 +1,28 @@
+
 <h1>Hello Mr. {{seller.owner}}</h1>
 <img src="{{url_for('static', filename='uploads/' + seller.img)}}" alt="logo" width="250" height="200">
+<div>
+    <p>{{seller.businessName}}</p>
+    <p>{{seller.phone}}</p>
+    <p>{{seller.registrationNum}}</p>
+    <p>{{seller.location}}</p>
+    <p>{{seller.city}}</p>
+    <p>{{seller.creditCardNum}}</p>
+</div>
 <h4>Here are your info</h4>
+
+<div>
+    <h1>My Orders</h1>
+    {% for order in my_orders %}
+    <img src="{{url_for('static', filename='uploads/' + order.productImg)}}" alt="order product img">
+    <p>{{order.productName}}</p>
+    <p>{{order.price}}</p>
+    <p>{{order.orderedDate}}</p>
+    <p>{{order.orderNum}}</p>
+    <p>{{order.status}}</p>
+    <p>{{order.delieveredOn}}</p>
+    <p>{{order.userID}}</p>
+    <p>{{order.billingAddress}}</p>
+    
+    {% endfor %}
+</div>

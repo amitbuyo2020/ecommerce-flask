@@ -1,5 +1,28 @@
+
+{% if session.loggedin %}
 <h1>Hello Mr. {{session.username}}</h1>
 
 <a href="{{url_for('add_product')}}">Add a product</a>
+<a href="{{url_for('profile', seller_id=session.id)}}">My Profile</a>
+
+<div>
+    <h1>My Products</h1>
+    {% if not my_products%}
+        <p>Oops nothing to show</p>
+    {% endif %}
+    {% for item in my_products %}
+        <div>
+            <img width="100" height="100" src="{{url_for('static', filename='uploads/' + item.productImg)}}" alt="product img">
+            <h3>{{item.productName}}</h3>
+            <p>Rs.<strong>{{item.price}}</strong></p>
+        </div>
+        <a href="{{url_for('deleteProduct', pk=item.productID)}}">Delete product</a>
+    {% endfor %}
+</div>
+
 
 <a href="{{url_for('logout_as_seller')}}">Log Out</a>
+
+{% else %}
+<a href="{{url_for('login_as_seller')}}">Login</a>
+{% endif %}

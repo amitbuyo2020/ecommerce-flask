@@ -309,7 +309,12 @@ def login_as_seller():
         
 @app.route('/seller/')
 def seller_home():
-    seller_id = session['id']
+    try:
+        seller_id = session['id']
+    except:
+        return render_template('seller-home.html')
+
+
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     if session['loggedin']:
         cursor.execute(
@@ -319,10 +324,20 @@ def seller_home():
             (seller_id, )
         )
         seller_info = cursor.fetchone()
-        print(seller_info)
+        cursor.execute(
+            '''
+                SELECT * from Products 
+                WHERE sellerID = %s
+            ''',
+            (session['id'], )
+        )
+        my_products = cursor.fetchall()
+        
+    else:
+        return redirect('404.html')    
+        
 
-
-    return render_template('seller-home.html', seller_info=seller_info)
+    return render_template('seller-home.html', seller_info=seller_info, my_products=my_products)
 
 
 
@@ -339,10 +354,24 @@ def profile():
             (session['id'], )
         )
         seller = cursor.fetchone()
-        # print(seller)
+
+        cursor.execute(
+            """
+                SELECT p.productName, p.price, p.productImg,
+                o.orderNum, o.orderedDate, o.delieveredOn,
+                o.userID, o.quantityOrdered, o.status, o.billingAddress 
+                FROM Products AS p
+                INNER JOIN Orders AS o
+                ON p.productID = o.productID
+                WHERE p.sellerID = %s
+            """,
+            (session['id'], )
+        )
+        my_orders = cursor.fetchall()
+
     else:
         return redirect(url_for('login_as_seller'))
-    return render_template('seller-profile.html', seller=seller)
+    return render_template('seller-profile.html', seller=seller, my_orders=my_orders)
 
 
 @app.route("/seller/add", methods=['GET', 'POST'])
@@ -380,13 +409,30 @@ def add_product():
             (productID, description, inStock, ratings, weight, category)
         )
         mysql.connection.commit()
-        # msg = "Product Added successfully"
         return redirect(url_for('seller_home'))
         
     else:
         msg = "Something went wrong!!"
         # return redirect(url_for('login_as_seller'))
     return render_template('add_product.html', msg=msg)
+
+
+
+@app.route('/delete-product', methods=['POST', 'GET'])
+def deleteProduct():
+    productID = request.args.get('id')
+    print(productID)
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        '''
+            DELETE FROM Products
+            WHERE productID = %s
+        ''',
+        (productID, )
+    )
+    mysql.connection.commit()
+    return redirect(url_for('seller_home'))
+
 ################################END OF SELLER FUNCTIONS/ROUTES ############################################
 
 
@@ -476,7 +522,7 @@ def search():
                 FROM Products AS p
                 INNER JOIN ProductDetails AS d
                 on p.productID = d.productID
-                WHERE p.productName LIKE "%s"
+                WHERE p.productName LIKE % %s %
             ''',
             (items, )
         )
@@ -556,7 +602,6 @@ def order():
 def my_orders():
 
     userID = session.get('id')
-    print(userID)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(
         '''
@@ -572,12 +617,25 @@ def my_orders():
         (userID, )
     )
     my_order = cursor.fetchall()
-    print(my_order)
 
     return render_template('my-orders.html', my_order=my_order)
 
-################################### END OF ORDER VIEWS ###############################
 
+
+@app.route('/cancel-order', methods=['POST', 'GET'])
+def cancel():
+    orderNum = request.args.get('id')
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        '''
+            DELETE FROM Orders
+            WHERE orderNum = %s
+        ''',
+        (orderNum, )
+    )
+    mysql.connection.commit()
+    return redirect(url_for('my_orders'))
+################################### END OF ORDER VIEWS ###############################
 
 
 
