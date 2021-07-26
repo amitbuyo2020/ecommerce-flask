@@ -1,3 +1,4 @@
+from datetime import timezone
 from itertools import product
 from flask import Flask, jsonify
 from flask import render_template, redirect, url_for, request, session
@@ -7,6 +8,7 @@ from flask_mysqldb import MySQL
 import MySQLdb
 import os
 from werkzeug.utils import secure_filename
+import time
 
 # Initialize flask application
 app = Flask(__name__)
@@ -21,6 +23,8 @@ def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+localTime = time.localtime()
+orderedOn = f'{localTime.tm_year}-{localTime.tm_mon}-{localTime.tm_mday}' 
 
 # Database Configuration
 app.config['SECRET_KEY'] = 'sdklaskdlask'
@@ -40,6 +44,9 @@ mysql = MySQL(app)
 
 @app.route("/")
 def home():
+    session = []
+
+   
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(
         '''
@@ -50,7 +57,16 @@ def home():
         '''
     )
     products = cursor.fetchall()
-    return render_template('index.html', products=products)
+    
+    cursor.execute(
+        '''
+            SELECT * FROM Category
+        '''
+    )
+
+
+    category = cursor.fetchall()
+    return render_template('index.html', products=products, category=category)
 
 ############################ START OF AUTHENTICATION AND USER VIEWS ########################
 # Login view
@@ -197,6 +213,7 @@ def userProfile():
 
 @app.route('/seller/register', methods=['GET', 'POST'])
 def register_as_seller():
+    # session.clear()
     if request.method == "POST":
         email = request.form['email']
         username = request.form['owner']
@@ -331,7 +348,8 @@ def profile():
 @app.route("/seller/add", methods=['GET', 'POST'])
 def add_product():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    print(session['loggedin'])
+    # print(session['loggedin'])
+  
     if request.method == "POST":
         # print(session['loggedin'])
 
@@ -359,12 +377,12 @@ def add_product():
             '''
                 INSERT INTO ProductDetails VALUES (%s, %s, %s, %s, %s, %s)
             ''',
-            (productID, description, inStock, category, ratings, weight)
+            (productID, description, inStock, ratings, weight, category)
         )
         mysql.connection.commit()
-        msg = "Product Added Successfully"
+        # msg = "Product Added successfully"
         return redirect(url_for('seller_home'))
-    
+        
     else:
         msg = "Something went wrong!!"
         # return redirect(url_for('login_as_seller'))
@@ -392,10 +410,12 @@ def product_details():
 
     
     cursor.execute(
-        '''SELECT p.productID, p.productName, p.productImg, d.description, p.price, d.weight, d.category 
+        '''
+        SELECT p.productID, p.productName, p.productImg, d.description, p.price, d.weight, d.category, c.categoryName 
         FROM Products AS p
-        inner join ProductDetails AS d
+        INNER JOIN ProductDetails AS d
         ON p.productID = d.productID
+        INNER JOIN Category AS c on d.category = c.categoryID
         WHERE p.productID = %s
         ''', 
         (productID, )
@@ -411,7 +431,7 @@ def category():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(
         '''
-            SELECT distinct category FROM ProductDetails
+            SELECT * FROM Category
         '''
     )
     categories = cursor.fetchall()
@@ -425,18 +445,19 @@ def category():
 @app.route('/category-list/')
 def category_list():
     # print(request.args.get(''))
-    category = request.args.get('cat')
-    print(category)
+    categoryID = request.args.get('cat')
+    # print(category)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(
         '''
-            SELECT distinct p.productName, p.productImg,  p.price, d.description, d.inStock, d.weight, d.category
-            FROM ProductDetails AS d
-            INNER JOIN Products AS p
-            ON d.productID = p.productID
-            WHERE d.category = %s
+            SELECT p.productName, p.price, p.productID, p.productImg, d.ratings, c.categoryName, c.categoryID
+            FROM Category AS c
+            INNER JOIN ProductDetails AS d on c.categoryID = d.category
+            INNER JOIN Products AS p on d.productID = p.productID
+            WHERE
+            c.categoryID = %s
         ''', 
-        (category, )
+        (categoryID, )
     )
     cat_items = cursor.fetchall()
     print(cat_items)
@@ -469,11 +490,61 @@ def search():
 ########################## END OF PRODUCT VIEWS ##################################################################
 
 ################################### START OF ORDER VIEWS ###############################
-@app.route('/order', methods=["POST", 'GET'])
+
+@app.route('/order', methods=['POST', 'GET'])
 def order():
+    msg = ""
+    user_id = session.get('id')
+    productID = request.args.get('code')
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        '''
+            SELECT creditCardNum FROM CustomerDetails
+            WHERE customerID = %s
+        ''',
+        (user_id,)
+    )
+    bankDetails = cursor.fetchone()
+    creditCardNum = bankDetails['creditCardNum']
+
     if request.method == "POST":
-        pass
+        quantity = request.form['quantity']
+        address = request.form['billingAddress']
+        productCode = request.form['productID']
+
+        try:
+            cursor.execute(
+                '''
+                    INSERT INTO Orders (
+                        productID, 
+                        creditCardNum, 
+                        userID, 
+                        quantityOrdered, 
+                        billingAddress, 
+                        orderedDate
+                    )
+                    VALUES (%s, %s, %s, %s, %s, NOW())
+                ''',
+                (productCode, creditCardNum, user_id, quantity, address)
+            )
+            mysql.connection.commit()
+            return redirect(url_for('home'))
+        
+        except:
+            msg =   """
+                        Something went wrong. 
+                        Please fill out the info or 
+                        check if the product code is valid
+                    """
+            return msg
+        
+
+
+    return render_template('order.html', product_id=productID, msg=msg)
 ################################### END OF ORDER VIEWS ###############################
+
+
+
 
 if __name__ == "__main__":
     app.run(debug = True)

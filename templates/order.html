@@ -1,3 +1,10 @@
+{{msg}}
 <form action="{{url_for('order')}}" method="POST">
+    <input type="number" step="1" pattern="\d+" placeholder="Enter the number of orders" name="quantity" />
 
+    <input type="text" name="billingAddress" class="textbox" placeholder="Billing Address" />
+    <input type="text" name="productID" class="textbox" placeholder="productID" value="{{product_id}}" />
+
+    <input type="submit" name="Order now" class="textbox" placeholder="Order now" />
+    
 </form>

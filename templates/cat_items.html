@@ -1,14 +1,19 @@
-
-{% for cat in cat_items %}
-    <div align="center">
-        <img src="{{url_for('static', filename='uploads/' + cat.productImg)}}" alt="" width="400" height="300">    
-
-        <h3>{{cat.productName}}</h3>
-        <br />
-        <p>Price: Rs. <strong>{{cat.price}}</strong> </p>
-        <br />
-        <p>{{cat.description}}</p>
+{% if cat_items %}
+    {% for cat in cat_items %}
         
-        <p>{{cat.weight}} kgs</p>
-    </div>
-{% endfor %}
+        <div align="center">
+            <img src="{{url_for('static', filename='uploads/' + cat.productImg)}}" alt="" width="400" height="300">    
+
+            <a href="{{url_for('product_details', pk=cat.productID)}}"><h3>{{cat.productName}}</h3></a>
+            <br />
+            <p>Price: Rs. <strong>{{cat.price}}</strong> </p>
+            <br />
+            <p>{{cat.description}}</p>
+            {% if cat.weight %}
+                <p>{{cat.weight}} kgs</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+        <h2>Oops!! Nothing to show here!</h2>
+{% endif %}

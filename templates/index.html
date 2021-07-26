@@ -39,10 +39,10 @@
 		<ul class="nav navbar-nav navbar-right">
 			{% if session.loggedin %}
 				<li><h4 class="text-white">Hi, {{session.username}}</h4></li>
-				<li><a href="{{url_for('logout')}}"><span class="glyphicon glyphicon-log-in"></span>Log out</a></li>
+				<li><a href="{{url_for('logout')}}"> <span class="glyphicon glyphicon-log-in"></span>Log out</a></li>
 			{% else %}
-				<li><a href="{{url_for('register')}}"><span class="glyphicon glyphicon-user"></span> Sign up</a></li>
-				<li><a href="{{url_for('login')}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+				<li><a href="{{url_for('register')}}"> <span class="glyphicon glyphicon-user"></span> Sign up</a></li>
+				<li><a href="{{url_for('login')}}"> <span class="glyphicon glyphicon-log-in"></span> Login</a></li>
 			{% endif %}	
 		</ul>
 	  </div>
@@ -53,7 +53,6 @@
 			<h1>Our Products</h1>
 			<div class="products">
 				{% for product in products %}
-					<!-- {{product.productID}} -->
 					<a href={{url_for('product_details', pk=product.productID)}}>
 						<img src="{{url_for('static', filename='uploads/' + product.productImg)}}" alt="samsung" width="250" height="200">
 						<h3 align="center">{{product.productName}}</h3>
@@ -62,10 +61,10 @@
 				{% endfor %}
 			</div>
 		</div>
-		<div class="side">
+		<div class="side d-flex flex-column">
 			<h2>Category</h2>
-			{% for product in products %}
-			<a href={{url_for('category_list', cat=product.category)}} id = {{product.category}} name ="category">{{product.category}}</a>
+			{% for cat in category %}
+			<a class="" href={{url_for('category_list', cat=cat.categoryID)}} id = {{cat.categoryID}} name ="category">{{cat.categoryName}}</a>
 
 			{% endfor %}
 
